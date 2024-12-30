@@ -150,7 +150,7 @@ class Soldier(pygame.sprite.Sprite):
         # method to shoot bullets, for ANY soldier, not just player
         if self.shoot_cooldown == 0 and self.ammo > 0: # have at least one bullet to shoot with
             self.shoot_cooldown = 20 # reset the cooldown
-            bullet = Bullet(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction), self.rect.centery, self.direction) # spawn bullet in front of the player's gun but not on top of the player so that it would take damage
+            bullet = Bullet(self.rect.centerx + (0.75 * self.rect.size[0] * self.direction), self.rect.centery, self.direction) # spawn bullet in front of the player's gun but not on top of the player so that it would take damage
             bullet_group.add(bullet)
             # reduce ammo
             self.ammo -= 1
