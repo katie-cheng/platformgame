@@ -44,6 +44,19 @@ def draw_bg():
         stagger += 115
     pygame.draw.line(screen, RED, (0, 300), (SCREEN_WIDTH, 300))
 
+class HealthBar():
+    def __init__(self, x, y, health, max_health):
+        self.x = x
+        self.y = y
+        self.health = health
+        self.max_health = max_health
+
+    def draw(self, health):
+        self.health = health
+        ratio = self.health / self.max_health
+        pygame.draw.rect(screen, RED, (self.x, self.y, 150, 20))
+        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, 150 * ratio, 20))
+
 class Soldier(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed, ammo):
         pygame.sprite.Sprite.__init__(self)
@@ -137,7 +150,7 @@ class Soldier(pygame.sprite.Sprite):
         # method to shoot bullets, for ANY soldier, not just player
         if self.shoot_cooldown == 0 and self.ammo > 0: # have at least one bullet to shoot with
             self.shoot_cooldown = 20 # reset the cooldown
-            bullet = Bullet(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction), self.rect.centery, self.direction) # spawn bullet in front of the player's gun but not on top of the player so that it would take damage
+            bullet = Bullet(self.rect.centerx + (0.75 * self.rect.size[0] * self.direction), self.rect.centery, self.direction) # spawn bullet in front of the player's gun but not on top of the player so that it would take damage
             bullet_group.add(bullet)
             # reduce ammo
             self.ammo -= 1
@@ -180,10 +193,14 @@ class Soldier(pygame.sprite.Sprite):
         self.image = self.animation_list[self.action][self.frame_index]
         if pygame.time.get_ticks() - self.update_time > ANIMATION_COOLDOWN:
             self.update_time = pygame.time.get_ticks()
-            self.frame_index += 1
+            if self.action != 3 or self.frame_index < len(self.animation_list[self.action]) - 1:
+                self.frame_index += 1
         # reset back to the start of the animation
         if self.frame_index >= len(self.animation_list[self.action]):
-            self.frame_index = 0
+            if self.action == 3:  # Death animation stops at the last frame
+                self.frame_index = len(self.animation_list[self.action]) - 1
+            else:
+                self.frame_index = 0
 
     def update_action(self, new_action):
         # check if the new action is different to the previous one
@@ -233,8 +250,11 @@ class Bullet(pygame.sprite.Sprite):
 bullet_group = pygame.sprite.Group() # keeping all instances of a class together in a list
 
 # Step 7: Create a player object of the Solider class
-player = Soldier('player', 200, 200, 3, 5, 20)
-enemy = Soldier('enemy', 400, 200, 3, 2, 10)
+player = Soldier('player', 200, 200, 1.65, 5, 20)
+enemy = Soldier('enemy', 400, 200, 1.65, 2, 10)
+
+# Create health bar
+player_health_bar = HealthBar(10, 10, player.health, player.max_health)
 
 # Step 3: Game Loop
 run = True
@@ -247,6 +267,7 @@ while run:
     player.update()
     # Step 8: Draw the player
     player.draw()
+    player_health_bar.draw(player.health)
 
     # Update and draw groups
     bullet_group.update()
