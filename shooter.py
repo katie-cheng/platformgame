@@ -159,8 +159,14 @@ class Soldier(pygame.sprite.Sprite):
             self.vel_y = 10 # terminal velocity
         dy += self.vel_y
 
-        #check for collision
+        #check for collision with nearby tiles only
+        char_bounds = pygame.Rect(self.rect.x + dx - TILE_SIZE, self.rect.y + dy - TILE_SIZE, 
+                                 self.width + 2*TILE_SIZE, self.height + 2*TILE_SIZE)
+        
         for tile in world.obstacle_list:
+            if not char_bounds.colliderect(tile[1]):
+                continue
+                
 			#check collision in the x direction
             if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                 dx = 0
@@ -293,9 +299,13 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH:
             self.kill() # built into pygame, removed bullet from group
         
+        # Only check tiles near the bullet
+        bullet_bounds = pygame.Rect(self.rect.x - TILE_SIZE, self.rect.y - TILE_SIZE,
+                                   self.rect.width + 2*TILE_SIZE, self.rect.height + 2*TILE_SIZE)
         for tile in world.obstacle_list:
-             if tile[1].colliderect(self.rect):
+            if bullet_bounds.colliderect(tile[1]) and tile[1].colliderect(self.rect):
                 self.kill()
+                break
 
         # check collision with characters with pygame spritecollide
         if pygame.sprite.spritecollide(player, bullet_group, False):
